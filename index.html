@@ -1,0 +1,222 @@
+<html><head><base href="https://inflacia-kalkulator.fingo.sk/" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kalkulačka inflácie a sporenia</title>
+<style>
+    body {
+        font-family: 'Roboto', sans-serif;
+        background-color: #f5f5f5;
+        color: #333;
+        line-height: 1.6;
+        margin: 0;
+        padding: 20px;
+    }
+    .container {
+        background-color: #ffffff;
+        border-radius: 8px;
+        padding: 2rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        max-width: 600px;
+        margin: 0 auto;
+    }
+    h1 {
+        text-align: center;
+        color: #ec7c00;
+        margin-bottom: 1.5rem;
+        font-size: 2rem;
+        font-weight: 500;
+    }
+    .input-group {
+        margin-bottom: 1.5rem;
+    }
+    label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+        color: #333;
+    }
+    input[type="number"] {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        background-color: #ffffff;
+        color: #333;
+        font-size: 1rem;
+    }
+    input[type="number"]:focus {
+        outline: none;
+        border-color: #ec7c00;
+    }
+    button {
+        width: 100%;
+        padding: 1rem;
+        border: none;
+        border-radius: 4px;
+        background-color: #ec7c00;
+        color: #ffffff;
+        font-size: 1.1rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+    button:hover {
+        background-color: #d36f00;
+    }
+    #result {
+        margin-top: 1.5rem;
+        text-align: left;
+        font-size: 1.1rem;
+    }
+    .result-item {
+        margin-bottom: 1rem;
+        padding: 1rem;
+        background-color: #f9f9f9;
+        border-radius: 4px;
+    }
+    .highlight {
+        color: #ec7c00;
+        font-size: 1.3rem;
+        font-weight: 500;
+    }
+    .emoji {
+        font-size: 1.5rem;
+        margin-right: 0.5rem;
+    }
+    .disclaimer {
+        margin-top: 1.5rem;
+        font-size: 0.9rem;
+        color: #666;
+        text-align: center;
+    }
+    .info-banner {
+        background-color: #ec7c00;
+        color: #ffffff;
+        padding: 0.5rem;
+        border-radius: 4px;
+        cursor: pointer;
+        text-align: center;
+        margin-top: 0.5rem;
+    }
+    .info-text {
+        display: none;
+        background-color: #f9f9f9;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        padding: 1rem;
+        margin-top: 0.5rem;
+        font-size: 0.9rem;
+        color: #333;
+    }
+</style>
+</head>
+<body>
+<div class="container">
+    <h1>💰 Kalkulačka inflácie a sporenia 📈</h1>
+    <div class="input-group">
+        <label for="currentSavings"><span class="emoji">💼</span>Aktuálne úspory (€):</label>
+        <input type="number" id="currentSavings" min="0" step="0.01" required>
+    </div>
+    <div class="input-group">
+        <label for="monthlySavings"><span class="emoji">💶</span>Mesačné sporenie (€):</label>
+        <input type="number" id="monthlySavings" min="0" step="0.01" required>
+    </div>
+    <div class="input-group">
+        <label for="savingsPeriod"><span class="emoji">🗓️</span>Doba sporenia (roky):</label>
+        <input type="number" id="savingsPeriod" min="1" step="1" required>
+    </div>
+    <div class="input-group">
+        <label for="currentReturn"><span class="emoji">📊</span>Aktuálne zhodnotenie (%/rok):</label>
+        <input type="number" id="currentReturn" min="0" step="0.1" required>
+    </div>
+    <div class="input-group">
+        <label for="annualInflation"><span class="emoji">🏷️</span>Ročná inflácia (%):</label>
+        <input type="number" id="annualInflation" min="0" step="0.1" required>
+    </div>
+    <div class="input-group">
+        <label for="monthlyFee"><span class="emoji">💸</span>Mesačný poplatok (€):</label>
+        <input type="number" id="monthlyFee" min="0" step="0.01" required>
+    </div>
+    <button onclick="calculateSavingsWithInflation()">Vypočítaj</button>
+    <div id="result"></div>
+    <div class="disclaimer">Uvedené výpočty sú len orientačné a nezohľadňujú všetky ekonomické faktory.</div>
+</div>
+
+<script>
+function calculateSavingsWithInflation() {
+    const currentSavings = parseFloat(document.getElementById('currentSavings').value);
+    const monthlySavings = parseFloat(document.getElementById('monthlySavings').value);
+    const savingsPeriod = parseInt(document.getElementById('savingsPeriod').value);
+    const currentReturn = parseFloat(document.getElementById('currentReturn').value) / 100;
+    const annualInflation = parseFloat(document.getElementById('annualInflation').value) / 100;
+    const monthlyFee = parseFloat(document.getElementById('monthlyFee').value);
+
+    let totalSavings = currentSavings;
+    let totalDeposits = currentSavings;
+    const monthlyReturn = Math.pow(1 + currentReturn, 1/12) - 1;
+    const monthlyInflation = Math.pow(1 + annualInflation, 1/12) - 1;
+
+    for (let month = 1; month <= savingsPeriod * 12; month++) {
+        totalSavings = (totalSavings + monthlySavings - monthlyFee) * (1 + monthlyReturn);
+        totalDeposits += monthlySavings;
+    }
+
+    const nominalGain = totalSavings - totalDeposits;
+    const realValue = totalSavings / Math.pow(1 + annualInflation, savingsPeriod);
+    const inflationImpact = totalSavings - realValue;
+
+    const resultElement = document.getElementById('result');
+    resultElement.innerHTML = `
+        <div class="result-item">
+            <p><span class="emoji">💰</span>Celková nasporená suma:</p>
+            <p class="highlight">${totalSavings.toFixed(2)} €</p>
+        </div>
+        <div class="result-item">
+            <p><span class="emoji">📊</span>Celkové vklady:</p>
+            <p class="highlight">${totalDeposits.toFixed(2)} €</p>
+        </div>
+        <div class="result-item">
+            <p><span class="emoji">📈</span>Nominálny zisk:</p>
+            <p class="highlight">${nominalGain.toFixed(2)} €</p>
+        </div>
+        <div class="result-item">
+            <p><span class="emoji">🏷️</span>Reálna hodnota úspor (po inflácii):</p>
+            <p class="highlight">${realValue.toFixed(2)} €</p>
+        </div>
+        <div class="result-item">
+            <p><span class="emoji">📉</span>Vplyv inflácie:</p>
+            <p class="highlight">${inflationImpact.toFixed(2)} €</p>
+        </div>
+        <div class="info-banner" onclick="toggleInfoText()">Dôležitá informácia o výpočtoch</div>
+        <div class="info-text" id="infoText">
+            Tieto výpočty sú založené na zjednodušených predpokladoch a nemusia odrážať skutočný vývoj úspor a inflácie. 
+            Skutočné výsledky môžu byť ovplyvnené mnohými faktormi, vrátane zmien v ekonomike, úrokových sadzbách a inflácii.
+        </div>
+    `;
+}
+
+function toggleInfoText() {
+    const infoText = document.getElementById('infoText');
+    if (infoText.style.display === 'none' || infoText.style.display === '') {
+        infoText.style.display = 'block';
+    } else {
+        infoText.style.display = 'none';
+    }
+}
+
+const inputs = document.querySelectorAll('input[type="number"]');
+inputs.forEach(input => {
+    input.addEventListener('input', function() {
+        if (this.value < 0) {
+            this.value = 0;
+        }
+    });
+});
+
+document.addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        calculateSavingsWithInflation();
+    }
+});
+</script>
+</body></html>
